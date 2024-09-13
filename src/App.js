@@ -7,15 +7,7 @@ import {
 } from "react-router-dom";
 import "./App.css";
 import { auth, db } from "./firebase/init";
-import {
-  collection,
-  addDoc,
-  getDocs,
-  getDoc,
-  doc,
-  query,
-  where,
-} from "firebase/firestore";
+import { collection, addDoc, getDocs, getDoc, doc } from "firebase/firestore";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -31,26 +23,41 @@ function App() {
   const [user, setUser] = React.useState({});
   const [loading, setLoading] = React.useState(true);
 
-  function createPost() {
-    const post = {
-      title: "Hello World2",
-      description: "This is a sample post2",
-      uid: user.uid,
-    };
-    addDoc(collection(db, "posts"), post);
+  async function createPost(title, description) {
+    try {
+      const post = {
+        title,
+        description,
+        uid: user.uid,
+      };
+      await addDoc(collection(db, "posts"), post);
+      alert("Post created successfully!");
+    } catch (error) {
+      console.error("Error creating post:", error);
+    }
   }
 
   async function getAllPosts() {
-    const { docs } = await getDocs(collection(db, "posts"));
-    const posts = docs.map((elem) => ({ ...elem.data(), id: elem.id }));
+    try {
+      const { docs } = await getDocs(collection(db, "posts"));
+      const posts = docs.map((elem) => ({ ...elem.data(), id: elem.id }));
+      return posts; // Return the posts array
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    }
   }
 
-  async function getPostById() {
-    const id = user.id;
-    const postRef = doc(db, "posts", id);
-    const postSnap = await getDoc(postRef);
-    if (postSnap.exists()) {
-      const post = postSnap.data();
+  async function getPostById(postId) {
+    try {
+      const postRef = doc(db, "posts", postId);
+      const postSnap = await getDoc(postRef);
+      if (postSnap.exists()) {
+        return postSnap.data(); // Return the post data
+      } else {
+        return null; // Return null if no post found
+      }
+    } catch (error) {
+      console.error("Error fetching post:", error);
     }
   }
 
@@ -64,13 +71,9 @@ function App() {
   }, []);
 
   function register(email, password) {
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((data) => {
-        console.log(data);
-      })
-      .catch((error) => {
-        console.error(error.code);
-      });
+    createUserWithEmailAndPassword(auth, email, password).catch((error) => {
+      console.error(error.code);
+    });
   }
 
   function login(email, password) {
