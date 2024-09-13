@@ -1,15 +1,21 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Register({ register }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const navigate = useNavigate(); // Hook for navigation
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (password === confirmPassword) {
-      register(email, password);
+      try {
+        await register(email, password);
+        navigate("/"); // Redirect to home after successful registration
+      } catch (error) {
+        console.error("Registration failed:", error);
+      }
     } else {
       alert("Passwords do not match");
     }
